@@ -1,0 +1,65 @@
+# place this after nvm initialization!
+autoload -U add-zsh-hook
+load-nvmrc() {
+  local node_version="$(nvm version)"
+  local nvmrc_path="$(nvm_find_nvmrc)"
+
+  if [ -n "$nvmrc_path" ]; then
+    local nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
+
+    if [ "$nvmrc_node_version" = "N/A" ]; then
+      nvm install
+    elif [ "$nvmrc_node_version" != "$node_version" ]; then
+      nvm use
+    fi
+  elif [ "$node_version" != "$(nvm version default)" ]; then
+    echo "Reverting to nvm default version"
+    nvm use default
+  fi
+}
+add-zsh-hook chpwd load-nvmrc
+load-nvmrc
+
+# Bindings
+bindkey "[D" backward-word
+bindkey "[C" forward-word
+bindkey "^[a" beginning-of-line
+bindkey "^[e" end-of-line
+
+# Aliases
+# --------------------------------------------------------------------
+
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+alias ......='cd ../../../../..'
+alias cd.='cd ..'
+alias cd..='cd ..'
+alias l='ls -alF'
+alias ll='ls -l'
+alias which='type -p'
+alias k5='kill -9 %%'
+alias gpob='git push origin $(git branch --show-current)'
+
+tally() {
+  sort | uniq -c | sort -n
+}
+
+cmdmatch () {
+  # Usage: cmdmatch <pattern>
+  # --help
+  if [[ $1 == '--help' ]]; then
+    echo "Usage: cmdmatch <pattern>";
+    return 0;
+  fi
+
+  # Return matching aliases
+  grep "alias" ~/.zshrc | grep "$1";
+
+  # error if no arguments
+  if [ $# -eq 0 ]; then
+    echo "No arguments supplied"
+    return 1
+  fi
+}
